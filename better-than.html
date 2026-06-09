@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BETTER THAN</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: #000;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── COMPARISON ── */
+    .comparison { border-bottom: 2px solid #000; }
+
+    .choice {
+      padding: 24px 24px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.06s;
+    }
+    .choice:hover  { background: #f5f5f5; }
+    .choice:active { background: #ebebeb; }
+
+    .choice-text {
+      font-size: clamp(20px, 4.8vw, 28px);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .or-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 24px;
+    }
+    .or-rule { flex: 1; height: 1px; background: #e0e0e0; }
+    .or-skip {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 20px;
+      color: #ccc;
+      padding: 0 4px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.1s;
+    }
+    .or-skip:hover  { color: #555; }
+    .or-skip:active { color: #000; }
+
+    /* ── RANKED LIST (the hero) ── */
+    .list-section { padding: 0 28px 100px; overflow: visible; }
+
+    .list-empty {
+      padding: 44px 0 0;
+      font-size: 14px;
+      font-weight: 400;
+      color: #ccc;
+      letter-spacing: 0.06em;
+    }
+
+    .r-list { list-style: none; padding: 0 4px; margin: 0; overflow: visible; }
+
+    .r-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      align-items: start;
+      gap: 0 10px;
+      padding: 9px 0;
+      transform-origin: left center;
+      will-change: transform;
+    }
+
+    .r-num {
+      font-size: 13px;
+      font-weight: 400;
+      color: #000;
+      line-height: 1.55;
+      letter-spacing: 0.03em;
+      padding-top: 2px;
+    }
+
+    .r-name {
+      font-size: clamp(20px, 4.5vw, 28px);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    @keyframes itemIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .r-item.is-new { animation: itemIn 0.22s ease both; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const ITEMS = [
+  "sleeping in on a rainy day",
+  "finding $20 in an old jacket",
+  "waking up and realizing you have more time to sleep",
+  "the moment before a vacation starts",
+  "plans getting cancelled when you wanted to stay home",
+  "your favorite song on shuffle at exactly the right moment",
+  "making someone laugh unexpectedly",
+  "being in the zone",
+  "a really good conversation that goes too late",
+  "something arriving earlier than expected",
+  "an unexpected refund",
+  "solving something that felt impossible",
+  "when a plan comes together perfectly",
+  "hearing a song you forgot you loved",
+  "being understood",
+  "a text from someone you were just thinking about",
+  "finishing something hard",
+  "teaching someone something and watching it land",
+  "a parking spot right in front",
+  "green lights all the way",
+  "a stranger being unexpectedly kind",
+  "a genuine compliment you weren't expecting",
+  "remembering a dream clearly",
+  "nostalgia that doesn't hurt",
+  "changing your mind about something",
+  "a decision you feel good about",
+  "letting something go",
+  "starting something new",
+  "the middle of something really good",
+  "waking up somewhere beautiful",
+  "a recommendation that totally pays off",
+  "discovering a band with a huge back catalog",
+  "introducing someone to something you love and they love it too",
+  "a surprise that's actually good",
+  "anticipation",
+  "momentum",
+  "flow state",
+  "being useful",
+  "finishing something you started a long time ago",
+  "a comfortable silence",
+  "being known by someone",
+  "a sense of humor about yourself",
+  "a perfect phrase that says exactly what you mean",
+  "the right word at the right time",
+  "accumulated knowledge",
+  "perspective",
+  "getting older without minding",
+  "a perfect slice of cheese pizza",
+  "ramen at 2am",
+  "the first sip of coffee in the morning",
+  "cold watermelon on a hot day",
+  "movie theater popcorn",
+  "a perfect cheeseburger",
+  "fresh bread straight out of the oven",
+  "a cold beer after yard work",
+  "leftover pizza for breakfast",
+  "soup when you're sick",
+  "a flaky croissant",
+  "pancakes on a Sunday morning",
+  "a perfectly ripe avocado",
+  "pad thai from the right place",
+  "a really good taco",
+  "ice cream on a hot day",
+  "birthday cake",
+  "Arby's curly fries",
+  "McDonald's fries (hot and perfect)",
+  "Wendy's Frosty",
+  "the last chip in the bag",
+  "sushi that's genuinely transcendent",
+  "a perfect soft-boiled egg",
+  "really good cheese",
+  "fancy chocolate",
+  "cheap chocolate",
+  "Thanksgiving dinner",
+  "late night diner eggs and toast",
+  "a perfect grilled cheese",
+  "cold water when you're really thirsty",
+  "the perfect burrito",
+  "fried chicken from the right place",
+  "pho",
+  "a perfect dumpling",
+  "the corner piece of a pan of brownies",
+  "cereal at midnight",
+  "campfire food",
+  "BBQ done right",
+  "a peach at peak ripeness",
+  "a really good sandwich",
+  "a gas station hot dog (unironically)",
+  "cookies and cold milk",
+  "matcha done right",
+  "a glass of really good wine",
+  "fresh mochi",
+  "a meal you cooked yourself that came out perfectly",
+  "the first bite of something amazing",
+  "okonomiyaki",
+  "a perfect lemon tart",
+  "tonkotsu ramen",
+  "a perfectly ripe mango",
+  "the cold side of the pillow",
+  "cracking your back perfectly",
+  "warm laundry fresh from the dryer",
+  "new socks",
+  "peeling the protective film off a new device",
+  "a really good stretch",
+  "a long hot shower with nowhere to be after",
+  "taking your shoes off after a long day",
+  "getting into bed with cold fresh sheets",
+  "a really good sneeze",
+  "the feeling right after a haircut",
+  "cold air on a hot face",
+  "sweatpants after formal clothes",
+  "a nap that hits perfectly",
+  "a warm coat in cold weather",
+  "bare feet on cool grass",
+  "the warmth of sun after being cold",
+  "rain on a tent",
+  "the silence after a concert",
+  "noise-canceling headphones kicking in",
+  "a keyboard that feels exactly right",
+  "that perfect pen",
+  "a satisfying click",
+  "bubble wrap",
+  "popping the seal on a new jar",
+  "a really good yawn",
+  "Spirited Away",
+  "The Godfather",
+  "Jurassic Park (1993)",
+  "The Shining",
+  "Princess Mononoke",
+  "Toy Story",
+  "Goodfellas",
+  "Blade Runner 2049",
+  "2001: A Space Odyssey",
+  "Mad Max: Fury Road",
+  "Parasite",
+  "Moonlight",
+  "Her",
+  "The Thing",
+  "Raiders of the Lost Ark",
+  "Akira",
+  "My Neighbor Totoro",
+  "Howl's Moving Castle",
+  "Nausicaa of the Valley of the Wind",
+  "Grave of the Fireflies",
+  "Castle in the Sky",
+  "Only Yesterday",
+  "Kiki's Delivery Service",
+  "Porco Rosso",
+  "The Wind Rises",
+  "Pom Poko",
+  "Eternal Sunshine of the Spotless Mind",
+  "Punch-Drunk Love",
+  "Uncut Gems",
+  "There Will Be Blood",
+  "No Country for Old Men",
+  "Fargo (1996)",
+  "The Big Lebowski",
+  "Drive",
+  "Nightcrawler",
+  "Whiplash",
+  "Pulp Fiction",
+  "Kill Bill Vol. 1",
+  "Inglourious Basterds",
+  "Come and See",
+  "Stalker",
+  "Wings of Desire",
+  "Tokyo Story",
+  "The 400 Blows",
+  "Persona",
+  "Mulholland Drive",
+  "Blue Velvet",
+  "Synecdoche, New York",
+  "Being John Malkovich",
+  "The Royal Tenenbaums",
+  "Rushmore",
+  "Fantastic Mr. Fox",
+  "The Grand Budapest Hotel",
+  "Alien",
+  "Aliens",
+  "Terminator 2",
+  "The Matrix",
+  "Apocalypse Now",
+  "Dr. Strangelove",
+  "A Clockwork Orange",
+  "Barry Lyndon",
+  "Eyes Wide Shut",
+  "Chinatown",
+  "Vertigo",
+  "Rear Window",
+  "Psycho",
+  "Some Like It Hot",
+  "Jaws",
+  "Close Encounters of the Third Kind",
+  "E.T.",
+  "Dark Side of the Moon",
+  "Kind of Blue",
+  "What's Going On",
+  "OK Computer",
+  "Purple Rain",
+  "Thriller",
+  "Pet Sounds",
+  "The Miseducation of Lauryn Hill",
+  "Loveless",
+  "Blue (Joni Mitchell)",
+  "Led Zeppelin IV",
+  "Nevermind",
+  "Illmatic",
+  "To Pimp a Butterfly",
+  "Endtroducing...",
+  "Reasonable Doubt",
+  "A Seat at the Table",
+  "Giant Steps",
+  "Music for Airports",
+  "Selected Ambient Works 85-92",
+  "Dummy",
+  "Mezzanine",
+  "Blue Lines",
+  "The Blueprint",
+  "Ready to Die",
+  "Enter the Wu-Tang (36 Chambers)",
+  "Aquemini",
+  "Stankonia",
+  "Speakerboxxx / The Love Below",
+  "In Rainbows",
+  "Kid A",
+  "The Bends",
+  "A Moon Shaped Pool",
+  "Homogenic",
+  "Post (Bjork)",
+  "Vespertine",
+  "Sign O the Times",
+  "Songs in the Key of Life",
+  "Talking Book",
+  "Innervisions",
+  "A Love Supreme",
+  "Bitches Brew",
+  "Sketches of Spain",
+  "The Koln Concert",
+  "Head Hunters",
+  "Tago Mago",
+  "Ege Bamyasi",
+  "Future Days",
+  "Remain in Light",
+  "Fear of Music",
+  "The Velvet Underground and Nico",
+  "White Light White Heat",
+  "Low (David Bowie)",
+  "Heroes (David Bowie)",
+  "Station to Station",
+  "Ziggy Stardust",
+  "Let It Bleed",
+  "Exile on Main St.",
+  "After the Gold Rush",
+  "Harvest",
+  "Blood on the Tracks",
+  "Blonde on Blonde",
+  "Highway 61 Revisited",
+  "Court and Spark",
+  "Hejira",
+  "a perfect sunset",
+  "mountains",
+  "the ocean at night",
+  "a forest after rain",
+  "a night sky with no light pollution",
+  "a hot spring in winter",
+  "a perfect autumn day",
+  "the smell of rain before it hits",
+  "thunder you can feel in your chest",
+  "fireflies",
+  "the first real spring day",
+  "a lake at dawn",
+  "being inside during a storm",
+  "fog rolling through a city at night",
+  "cherry blossoms",
+  "a good neighborhood bar",
+  "a diner that's been there forever",
+  "a city from above at night",
+  "a long train through countryside",
+  "an empty beach off-season",
+  "tide pools",
+  "a campfire",
+  "woods at night",
+  "a good park bench",
+  "golden hour",
+  "the first warm day in February",
+  "a warm day after weeks of rain",
+  "the smell of old books",
+  "libraries",
+  "a bookstore with no particular plan",
+  "a used record store",
+  "a museum on a quiet weekday",
+  "a good hardware store",
+  "an empty inbox",
+  "phone at 100%",
+  "perfect Wi-Fi",
+  "the right tool for the job",
+  "a well-organized drawer",
+  "clean sneakers",
+  "a new notebook",
+  "a perfectly sharpened pencil",
+  "understanding something that confused you",
+  "knowing where everything is",
+  "a room at exactly the right temperature",
+  "a comfortable chair that's exactly right",
+  "a blanket at the right weight",
+  "a show you can't stop watching",
+  "an episode that makes you text someone immediately",
+  "a movie you weren't expecting to love",
+  "live music that hits perfectly",
+  "the moment a crowd sings together",
+  "the silence after a great performance",
+  "rewatching something you loved",
+  "a game you can't put down",
+  "finishing a video game",
+  "a really good joke you didn't see coming",
+  "staying up too late because something was too good",
+  "a book that changes how you think",
+  "a sentence that stops you cold",
+  "finishing a book in one sitting",
+  "rereading something and loving it more",
+  "a recommendation that completely pays off",
+  "a dog being genuinely happy to see you",
+  "a cat choosing to sit with you specifically",
+  "a bird that isn't afraid of you",
+  "a really good dog",
+  "a really long playlist for a long drive",
+  "a photo that captures exactly how it felt",
+  "a smell that transports you instantly",
+  "silence",
+  "being somewhere with perfect light",
+  "something working on the first try",
+  "a clean car interior",
+  "a perfect rhyme you didn't plan",
+  "an idea that surprises you",
+  "a genuinely funny meme",
+  "a morning with nowhere to be",
+  "Sunday morning",
+  "the night before something exciting",
+  "a quiet house",
+  "having the whole couch to yourself",
+  "the day after finishing something hard",
+  "waking up feeling actually rested",
+  "the feeling after a long run",
+  "the feeling after a good cry",
+  "a city before it wakes up",
+  "being the first one up",
+  "a letter in the mail",
+  "a good map",
+  "the last day before a long break",
+  "a genuinely great night out",
+  "the walk home after a great night",
+  "that specific tiredness after a day at the beach",
+  "the first night in a new place",
+  "a really good night's sleep",
+  "the moment you stop worrying about something",
+  "realizing you were wrong about something important",
+  "a decision you're still proud of years later",
+  "telling a story that lands",
+  "being in the audience for something great",
+  "finding a new favorite anything",
+  // childhood (all gens)
+  "waking up on Christmas morning",
+  "a snow day",
+  "finding money in a birthday card",
+  "the last day of school",
+  "summer vacation starting",
+  "an ice cream truck on the hottest day",
+  "catching fireflies in a jar",
+  "riding your bike all day with nowhere to be",
+  "building a fort out of couch cushions",
+  "staying up way past your bedtime",
+  "a really good Halloween haul",
+  "learning to ride a bike without training wheels",
+  "the deep end of the pool",
+  "a slip-and-slide in the backyard",
+  "the first day you could stay home alone",
+  "a really good birthday party",
+  "a Happy Meal toy that was actually good",
+  "recess",
+  "a good substitute teacher",
+  "your team winning the championship game",
+  "getting exactly what you wanted",
+  "winning at something you practiced for",
+
+  // gen x
+  "Blockbuster on a Friday night",
+  "a mix tape someone made for you",
+  "Saturday morning cartoons",
+  "MTV when it played music videos",
+  "getting a new Nintendo cartridge",
+  "the smell of a new video game manual",
+  "The Simpsons seasons 3 through 8",
+  "Seinfeld",
+  "staying up for Late Night",
+  "a VHS you watched until it warped",
+  "choosing a movie at Blockbuster",
+  "the AIM away message as art form",
+  "a really good mix CD",
+  "the first time you heard Nirvana",
+  "watching 120 Minutes on MTV",
+  "a record store that knew what you needed",
+  "finding a great album at a garage sale",
+
+  // millennial
+  "Harry Potter the first time",
+  "a fully loaded iPod",
+  "Napster before they shut it down",
+  "watching Lost live and calling someone after",
+  "a Tamagotchi that survived",
+  "the Oregon Trail (the game)",
+  "Pizza Hut Book It personal pan pizza",
+  "a perfect GameBoy game on a long car trip",
+  "getting your first cell phone",
+  "the first time you had Wi-Fi at home",
+  "downloading a song and it being the right one",
+  "a DVD bonus features section worth watching",
+  "a new episode of a show when there was no streaming",
+  "The O.C. seasons one and two",
+  "Buffy the Vampire Slayer",
+  "Freaks and Geeks",
+  "Arrested Development seasons 1 to 3",
+  "30 Rock",
+  "Community (the good seasons)",
+  "Parks and Rec seasons 2 through 6",
+
+  // gen z
+  "Among Us when everyone you knew was playing it",
+  "Animal Crossing during quarantine",
+  "a perfectly timed meme",
+  "Vine compilations",
+  "Discord at 2am with your people",
+  "Wordle in 2",
+  "a YouTube video essay that's 3 hours long and worth every minute",
+  "TikTok knowing exactly what you needed to see",
+  "a show getting renewed when you thought it was cancelled",
+  "an artist dropping an album with no promo",
+  "a concert where the whole crowd knows every word",
+  "Billie Eilish's first album",
+  "a perfectly curated Spotify playlist from someone who gets it",
+  "Fleabag",
+  "The Bear season 1",
+  "I Think You Should Leave",
+  "Abbott Elementary",
+  "an edit that's genuinely funny",
+  "a comment section that restores your faith",
+  "a video that's exactly the right length",
+  "a thread that actually delivers",
+  "a podcast that you immediately recommend to three people",
+  "Schitt's Creek",
+  "a group chat that's just good people",
+  "finding your corner of the internet",
+  "a recommendation algorithm that finally gets you",
+  "a subreddit that solves your exact problem",
+  "a Wikipedia rabbit hole that was worth it",
+  "Minecraft at night with headphones",
+
+  // gen alpha
+  "a perfect Roblox game with your friends",
+  "finding diamonds in Minecraft",
+  "a skin that's actually cool",
+  "Bluey",
+  "MrBeast giving someone a life-changing prize",
+  "beating a really hard Roblox obby",
+  "a game update that adds exactly what you wanted",
+  "a YouTuber who actually plays the game right",
+  "Among Us (the nostalgia)",
+  "a streamer who's funny without trying too hard",
+  "getting a new device that's actually yours",
+  "a phone with great battery life",
+  "a controller that fits your hands right",
+  "a gaming session with zero lag",
+
+  // food (new additions)
+  "a Costco hot dog and soda for a dollar fifty",
+  "a Slurpee on the hottest day of summer",
+  "Pizza Rolls straight from the oven",
+  "Gushers",
+  "Dunkaroos",
+  "Fruit by the Foot unrolled completely",
+  "cereal milk at the bottom of the bowl",
+  "a cold Capri Sun",
+  "a perfect fountain Coke",
+  "boba tea that's exactly what you needed",
+  "birria tacos",
+  "elote from a cart",
+  "a perfect breakfast burrito",
+  "chilaquiles done right",
+  "a tamale from the right person",
+  "katsu curry",
+  "a perfect bánh mì",
+  "congee when you're sick",
+  "a bodega bacon egg and cheese",
+  "a chocolate chip cookie still warm from the oven",
+  // music (songs and moments)
+  "Bohemian Rhapsody (the full experience)",
+  "Fast Car by Tracy Chapman",
+  "Hallelujah (Jeff Buckley version)",
+  "Don't You Forget About Me",
+  "Take On Me",
+  "Once in a Lifetime",
+  "This Must Be the Place",
+  "Here Comes the Sun",
+  "A Day in the Life",
+  "God Only Knows",
+  "Blackbird",
+  "Purple Haze",
+  "Superstition",
+  "Respect",
+  "No Scrubs",
+  "Creep",
+  "Fix You",
+  "Lose Yourself",
+  "Alright (Kendrick)",
+  "Money Trees",
+  "HUMBLE.",
+  "All Too Well (10 Minute Version)",
+  "Cruel Summer",
+  "cardigan",
+  "As It Was",
+  "Blinding Lights",
+  "a song that you loved before it blew up",
+  "a song that still holds up 20 years later",
+  "a song that's somehow about your life",
+  "a deep cut that's better than the single",
+
+  // TV and film (new)
+  "The Sopranos",
+  "Breaking Bad",
+  "The Wire",
+  "Succession",
+  "Twin Peaks",
+  "Curb Your Enthusiasm",
+  "What We Do in the Shadows",
+  "Avatar: The Last Airbender",
+  "Over the Garden Wall",
+  "Gravity Falls",
+  "Cowboy Bebop",
+  "Fullmetal Alchemist: Brotherhood",
+  "Neon Genesis Evangelion",
+  "Samurai Champloo",
+  "Pokémon (original series)",
+  "Dragon Ball Z (the good arcs)",
+  "Naruto before the filler",
+  "Death Note",
+  "Spirited Away at age 8 vs age 28",
+  "a Pixar movie that makes you cry as an adult",
+  "Toy Story 3",
+  "the first 10 minutes of Up",
+  "WALL-E",
+  "Inside Out",
+  "Coco",
+  "a movie that gets better every time you watch it",
+  "a horror movie that actually scared you",
+  "Batman: The Animated Series",
+  "Gargoyles",
+  "Hey Arnold!",
+  "Rugrats",
+  "Rocko's Modern Life",
+  "Animaniacs",
+  "King of the Hill",
+  "Daria",
+  "Beavis and Butt-Head",
+  "Futurama",
+  "Regular Show",
+  "Adventure Time",
+  "Steven Universe",
+  "The Amazing World of Gumball",
+
+  // gaming moments
+  "getting all the way through a Zelda dungeon",
+  "a perfect Pokémon team that just works",
+  "finding a secret area no one told you about",
+  "video game music that hits harder than it should",
+  "a gaming session that goes until 4am",
+  "completing a game 100%",
+  "one more level at midnight",
+  "couch co-op with the right people",
+  "a tabletop RPG session where everything clicks",
+  "winning on the last possible move",
+  "a comeback win in anything",
+
+  // moments and feelings (new)
+  "something going viral that actually deserves it",
+  "a sports moment you watched live",
+  "witnessing something that becomes history",
+  "a protest that changes something",
+  "an apology that's actually sincere",
+  "a teacher who changed how you think",
+  "a mentor who saw something in you",
+  "a friend group that survives a decade",
+  "a long friendship that picks up exactly where it left off",
+  "being someone's favorite person for a day",
+  "making someone's day without trying",
+  "a random act of kindness that you still think about",
+  "being in the right place at the right time",
+  "a flight that lands early",
+  "a hotel room that exceeds expectations",
+  "finding your gate with time to spare",
+  "a restaurant with a table ready immediately",
+  "a check that's lower than you expected",
+  "someone who remembers your order",
+  "being a regular somewhere they're happy to see you",
+  "the corner booth",
+  "turning off notifications on purpose",
+  "airplane mode when you need it",
+  "a perfectly organized bag",
+  "waking up naturally before your alarm",
+  "a dream that felt real in a good way",
+  "a really good first impression",
+  "a second impression that's even better",
+  "a collaboration that works better than expected",
+  "a meeting that could have been an email but wasn't terrible",
+  "finishing something before the deadline",
+  "a to-do list that's completely done",
+  "a decision you'd make the same way again",
+  // connection and being understood
+  "a lyric that says what you couldn't",
+  "a word in another language for something you've always felt",
+  "a stranger who laughs at the exact same thing",
+  "finding out someone hates the same thing you hate",
+  "a silence that doesn't need to be filled",
+  "someone who notices what you notice",
+  "a reference that lands on the first try",
+  "a conversation that made you feel less weird",
+  "someone asking exactly the right question",
+  "a friendship that started with one very specific shared opinion",
+  "a compliment about something no one usually notices",
+  "a recommendation that was exactly right",
+  "a stranger who made a joke only you would get",
+  "finding your people",
+  "someone who matches your energy exactly",
+  "someone who already knows your order",
+  "being seen by someone who doesn't know you that well yet",
+  "someone who gets your humor without explanation",
+  "introducing two friends who become best friends",
+  "a person who finishes your references",
+
+  // aesthetic and sensibility
+  "the hour before sunset specifically",
+  "a playlist you made at 2am that still holds up",
+  "a photo you took that actually captured it",
+  "a handwritten note that says more than a text would",
+  "a corner of a room that's entirely yours",
+  "a room with exactly the right amount of clutter",
+  "plants that are visibly doing well",
+  "a kitchen that smells like something cooking",
+  "a bookshelf organized in a way only you understand",
+  "a movie poster that means something",
+  "the right candle at the right time",
+  "an apartment with good bones",
+  "light through a window at the right time of day",
+  "a table that has room for everything",
+  "a drawer that closes perfectly",
+
+  // introvert energy
+  "a whole weekend with no plans and no guilt",
+  "cancelling plans you were dreading and feeling genuinely fine",
+  "a night in that was better than the night out would have been",
+  "being home before dark on purpose",
+  "not checking your phone for three hours",
+  "a dinner party with exactly four people",
+  "going somewhere alone and it being better",
+  "a table for one that feels exactly right",
+  "knowing which bar you're going to before you leave",
+  "leaving a party at the exact right moment",
+
+  // intense feeler
+  "crying at something you've seen a dozen times before",
+  "a song that physically changes the temperature of the room",
+  "a book you can't loan out because you wrote in the margins",
+  "something beautiful that makes you almost angry",
+  "being moved by something you can't explain to anyone",
+  "a piece of music you've never been able to describe",
+  "something that made you pull over the car",
+  "sitting through the credits alone after a film",
+  "a scene that ruined a film in the best possible way",
+  "art that makes you feel less alone",
+  "a book that changed something you can't name",
+  "a song that only works at a specific volume",
+
+  // music nerd specifics
+  "the second listen to a new album",
+  "a B-side that's better than the single",
+  "a deep cut that's somehow more you than the hit",
+  "the forgotten album that's actually the best one",
+  "reading the liner notes",
+  "a record that sounds different on vinyl",
+  "hearing something live and it being completely different",
+  "an opener who was better than the headliner",
+  "finding out your favorite artist was influenced by your other favorite artist",
+  "a song that was yours before it was everyone's",
+  "a concert where something went wrong and it was perfect",
+  "a band breaking up before you saw them live",
+  "the exact version of a song that you love and no other version",
+
+  // slightly personal and weird
+  "taking the long way because the music wasn't done",
+  "rewatching the same episode to fall asleep",
+  "talking to yourself in the car",
+  "a very specific route you always take",
+  "the thing you always order without looking at the menu",
+  "a ritual that's entirely yours and makes no sense to explain",
+  "smelling a book before reading it",
+  "eating something in a specific order no one else does",
+  "a corner of the internet that was yours before it wasn't",
+  "organizing something in a way that only makes sense to you",
+  "a very specific comfort rewatch",
+  "the mug you always use",
+  "a walk you've taken so many times it's yours now",
+  "a specific time of night that feels like yours",
+
+  // first time feelings
+  "a first listen that becomes a forever album",
+  "a first episode that hooks you before the title card",
+  "a first sentence that makes you read all the way through",
+  "falling in love with a city in an afternoon",
+  "the exact moment something became your thing",
+  "discovering something that already feels like home",
+  "a first impression that was completely right",
+  "a phase you're not embarrassed about",
+
+  // values
+  "being honest when it would have been easier not to be",
+  "keeping a promise no one would have known about",
+  "doing something kind with no audience",
+  "changing your mind publicly",
+  "saying you were wrong first",
+  "standing up for something when it cost you something",
+  "choosing the harder right over the easier wrong",
+  "a decision that was hard and correct",
+  "being consistent when no one is watching",
+
+  // teenage / finding yourself
+  "a song that defined an entire year of your life",
+  "finding your aesthetic",
+  "the first time you felt like yourself",
+  "a friend who knew you before you figured yourself out",
+  "being the person who introduces people to things",
+  "a show that felt like it was made for you specifically",
+  "a book you read at exactly the right age",
+  "a teacher who treated you like you were already who you were becoming",
+  "the first time your taste felt like your own",
+  "a moment you knew what you believed",
+
+  // connection and closeness
+  "a first conversation that felt like a third conversation",
+  "someone who makes you funnier",
+  "staying up too late because you don't want to stop talking",
+  "a person who makes you want to be better",
+  "someone who changes your mind about something important",
+  "a relationship that made you more yourself",
+  "a goodbye that was worth everything before it",
+  "missing someone in a way that feels like gratitude",
+  "loving something so much you can't recommend it",
+  "sharing something you love and having it land",
+
+  // the screenshot moment
+  "a list that says more about you than a bio would",
+  "someone seeing your bookshelf and getting it immediately",
+  "a playlist someone made you that was exactly right",
+  "a gift that proved someone was paying attention",
+  "being known",
+];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function applyElo(winner, loser) {
+  const K = 32;
+  const exp = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+  winner.elo += K * (1 - exp);
+  loser.elo  += K * (0 - (1 - exp));
+  winner.compared++;
+  loser.compared++;
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+// Stable per-item rotation — assigned once, never changes
+const itemStyles = {};
+function getItemData(id) {
+  if (!itemStyles[id]) {
+    const rot = (Math.random() - 0.5) * 2.8;
+    const tx  = (Math.random() - 0.5) * 5;
+    itemStyles[id] = { rot, tx };
+  }
+  return itemStyles[id];
+}
+
+function getItemTransform(id) {
+  const d = getItemData(id);
+  return `rotate(${d.rot.toFixed(2)}deg) translateX(${d.tx.toFixed(1)}px)`;
+}
+
+const S = {
+  pool: [], remaining: [], current: null,
+  recentPairs: [], count: 0, started: true, prevRanked: [],
+};
+
+function initItems() {
+  const items = shuffle(ITEMS).map((text, id) => ({ id, text, elo: 1000, compared: 0 }));
+  S.pool = items.slice(0, 12);
+  S.remaining = items.slice(12);
+}
+
+function getMatchup() {
+  if (S.remaining.length > 0 && S.count % 4 === 0) {
+    const n = Math.min(2, S.remaining.length);
+    for (let i = 0; i < n; i++) S.pool.push(S.remaining.shift());
+  }
+  const sorted = [...S.pool].sort((a, b) => b.elo - a.elo);
+  const n = sorted.length;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    let i;
+    if (Math.random() < 0.65) {
+      const lo = Math.floor(n * 0.15);
+      const hi = Math.max(lo + 2, Math.floor(n * 0.85));
+      i = lo + Math.floor(Math.random() * (hi - lo - 1));
+    } else {
+      i = Math.floor(Math.random() * (n - 1));
+    }
+    i = Math.min(i, n - 2);
+    const a = sorted[i], b = sorted[i + 1];
+    const key = [a.id, b.id].sort().join(',');
+    if (!S.recentPairs.includes(key)) {
+      S.recentPairs.push(key);
+      if (S.recentPairs.length > 20) S.recentPairs.shift();
+      return [a, b];
+    }
+  }
+  return [sorted[0], sorted[1]];
+}
+
+function pick(winner, loser) {
+  applyElo(winner, loser);
+  S.count++;
+  S.current = getMatchup();
+  render();
+}
+
+function rankedItems() {
+  return [...S.pool].filter(i => i.compared > 0).sort((a, b) => b.elo - a.elo);
+}
+
+function renderGame() {
+  const [a, b] = S.current;
+  const list = rankedItems();
+  const prevIds = new Set(S.prevRanked);
+  S.prevRanked = list.map(i => i.id);
+
+  const listHTML = list.length === 0
+    ? ''
+    : `<ol class="r-list">${list.map((item, i) => `
+      <li class="r-item${!prevIds.has(item.id) ? ' is-new' : ''}" style="transform:${getItemTransform(item.id)}">
+        <span class="r-num">${pad(i + 1)}</span>
+        <span class="r-name">${item.text}</span>
+      </li>`).join('')}</ol>`;
+
+  return `
+<div class="comparison">
+      <div class="choice" id="pick-a"><div class="choice-text">${a.text}</div></div>
+      <div class="or-row"><div class="or-rule"></div><button class="or-skip" id="btn-skip">&#x20E0;</button><div class="or-rule"></div></div>
+      <div class="choice" id="pick-b"><div class="choice-text">${b.text}</div></div>
+    </div>
+    <div class="list-section">${listHTML}</div>`;
+}
+
+function skip() {
+  S.current = getMatchup();
+  render();
+}
+
+function render() {
+  document.getElementById('app').innerHTML = renderGame();
+  const [a, b] = S.current;
+  document.getElementById('pick-a').addEventListener('click', () => pick(a, b));
+  document.getElementById('pick-b').addEventListener('click', () => pick(b, a));
+  document.getElementById('btn-skip').addEventListener('click', skip);
+}
+
+initItems();
+S.current = getMatchup();
+render();
+</script>
+</body>
+</html>
